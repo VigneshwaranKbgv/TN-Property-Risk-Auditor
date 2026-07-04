@@ -1,0 +1,129 @@
+{
+  "type": "FeatureCollection",
+  "name": "flood_zones_tn",
+  "crs": {
+    "type": "name",
+    "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "flood_risk": "HIGH",
+        "river": "Cauvery Delta",
+        "district": "Nagapattinam, Tiruvarur",
+        "description": "Active flood plain — high annual inundation probability"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [79.50, 10.55], [79.80, 10.55], [80.00, 10.75],
+          [80.10, 11.00], [80.05, 11.20], [79.80, 11.25],
+          [79.50, 11.10], [79.40, 10.85], [79.50, 10.55]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "flood_risk": "HIGH",
+        "river": "Palar River",
+        "district": "Vellore, Ranipet, Kancheepuram",
+        "description": "Palar river flood plain — flash flood risk during NEM"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [79.80, 12.75], [80.00, 12.75], [80.20, 12.85],
+          [80.28, 13.00], [80.20, 13.10], [80.00, 13.05],
+          [79.80, 12.95], [79.70, 12.85], [79.80, 12.75]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "flood_risk": "HIGH",
+        "river": "Adyar River",
+        "district": "Chennai",
+        "description": "Urban flood zone — Chennai 2015 flood affected area"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [80.15, 12.95], [80.22, 12.95], [80.27, 13.00],
+          [80.22, 13.07], [80.15, 13.07], [80.10, 13.00],
+          [80.15, 12.95]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "flood_risk": "MEDIUM",
+        "river": "Vaigai River",
+        "district": "Madurai, Dindigul",
+        "description": "Vaigai river flood plain — seasonal inundation"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [77.90, 9.70], [78.20, 9.70], [79.00, 9.85],
+          [79.20, 10.00], [79.00, 10.10], [78.20, 10.00],
+          [77.90, 9.90], [77.80, 9.80], [77.90, 9.70]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "flood_risk": "MEDIUM",
+        "river": "Tamiraparani River",
+        "district": "Tirunelveli, Thoothukudi",
+        "description": "Tamiraparani flood plain — moderate inundation risk"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [77.60, 8.40], [77.90, 8.40], [78.40, 8.60],
+          [78.50, 8.80], [78.40, 8.90], [77.90, 8.75],
+          [77.60, 8.60], [77.50, 8.50], [77.60, 8.40]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "flood_risk": "MEDIUM",
+        "river": "Cooum River",
+        "district": "Chennai",
+        "description": "Urban drainage flood zone — seasonal waterlogging"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [80.18, 13.05], [80.24, 13.05], [80.27, 13.10],
+          [80.24, 13.15], [80.18, 13.15], [80.15, 13.10],
+          [80.18, 13.05]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "flood_risk": "LOW",
+        "river": "General Low-lying Coastal Areas",
+        "district": "Multiple",
+        "description": "Low-lying areas with occasional waterlogging"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [79.90, 11.30], [80.10, 11.30], [80.25, 11.80],
+          [80.25, 12.50], [80.10, 12.60], [79.90, 12.50],
+          [79.80, 11.80], [79.80, 11.30], [79.90, 11.30]
+        ]]
+      }
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+# Virtual Environments
+backend/venv/
+backend/.venv/
+venv/
+.venv/
+ENV/
+
+# Python caching
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache/
+.oxlintrc.json
+
+# Node modules & frontend builds
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+node_modules/
+dist/
+
+# Logs & temp files
+*.log
+backend/queries.log
+backend/pip_install.log
+.tempmediaStorage/
+.brain/
+**/logs/
+
+# Secrets & Environment variables
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# Large spatial datasets
+backend/data/static/waterbodies_tn.geojson
+backend/data/static/wb_tn_shp.zip
+backend/data/static/wb_tn_extracted/
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.gemini/
+.agents/
