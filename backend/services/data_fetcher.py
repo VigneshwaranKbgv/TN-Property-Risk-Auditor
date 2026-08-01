@@ -55,6 +55,10 @@ BHUVAN_WMS_URL = "https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms"
 # TNGIS base (login-gated — kept for future use if they open public API)
 TNGIS_BASE_URL = os.getenv("TNGIS_BASE_URL", "https://tngis.tn.gov.in/geoserver/ows")
 
+# On slow/free hosting, skip live WMS probes and the 83MB NWIC download at
+# startup so cold boots stay fast and don't trip platform health checks.
+FAST_STARTUP = os.getenv("FAST_STARTUP", "false").lower() == "true"
+
 
 # ── get_capabilities ──────────────────────────────────────────────────────────
 def get_capabilities() -> list[str]:
@@ -63,6 +67,10 @@ def get_capabilities() -> list[str]:
     Checks Bhuvan (public WMS) first since TNGIS requires login auth.
     Caches result to capabilities_cache.json; loads from cache on failure.
     """
+    if FAST_STARTUP:
+        logger.info("[Capabilities] FAST_STARTUP=true — skipping live WMS probes, using cache")
+        return _load_capabilities_from_cache()
+
     layers: list[str] = []
 
     # Try Bhuvan WMS GetCapabilities (public endpoint)
@@ -163,14 +171,17 @@ def fetch_waterbodies_layer(district: str = "") -> gpd.GeoDataFrame:
             _cached_waterbodies_gdf = gdf
             return gdf
 
-    # 3. Try downloading from NWIC now
-    logger.info("[NWIC] Attempting to download TN water body shapefile …")
-    downloaded = _download_file(NWIC_WATERBODY_URL, zip_path, "NWIC water bodies ZIP")
-    if downloaded and zip_path.exists():
-        gdf = _extract_and_process_nwic_zip(zip_path, processed_path)
-        if gdf is not None:
-            _cached_waterbodies_gdf = gdf
-            return gdf
+    # 3. Try downloading from NWIC now (skipped under FAST_STARTUP)
+    if not FAST_STARTUP:
+        logger.info("[NWIC] Attempting to download TN water body shapefile …")
+        downloaded = _download_file(NWIC_WATERBODY_URL, zip_path, "NWIC water bodies ZIP")
+        if downloaded and zip_path.exists():
+            gdf = _extract_and_process_nwic_zip(zip_path, processed_path)
+            if gdf is not None:
+                _cached_waterbodies_gdf = gdf
+                return gdf
+    else:
+        logger.info("[NWIC] FAST_STARTUP=true — skipping live download, using fallback")
 
     # 4. Fall through to local fallback
     _cached_waterbodies_gdf = _load_fallback_waterbodies(DATA_STATIC / "waterbodies_fallback.geojson")

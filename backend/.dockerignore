@@ -1,0 +1,12 @@
+venv/
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.env
+queries.log
+pip_install.log
+data/static/waterbodies_tn.geojson
+data/static/wb_tn_shp.zip
+data/static/wb_tn_extracted/
