@@ -12,7 +12,7 @@ from pydantic import BaseModel, field_validator
 
 from services.spatial_engine import evaluate_property_risk
 from services.llm_service import generate_risk_report
-from utils.geo_utils import is_within_tamil_nadu
+from utils.geo_utils import get_state_for_coords, is_within_tamil_nadu
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -62,13 +62,28 @@ async def assess_risk(request: RiskRequest) -> RiskResponse:
     """
     lat, lon = request.lat, request.lon
 
-    # ── 1. Tamil Nadu boundary check ──────────────────────────────────────────
+    # ── 1. Tamil Nadu boundary check (bounding box — fast, no network) ────────
     if not is_within_tamil_nadu(lat, lon):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=(
                 f"Coordinates ({lat}, {lon}) are outside Tamil Nadu. "
                 "Valid range: lat 8.0–13.6, lon 76.2–80.4"
+            ),
+        )
+
+    # ── 1b. Tamil Nadu state check (reverse geocode) ──────────────────────────
+    # The bounding box above is rectangular and necessarily overlaps slivers of
+    # Kerala/Karnataka/Andhra Pradesh. Fails permissively (state is None) if
+    # the geocoder is unreachable, so a flaky third party can't block real
+    # Tamil Nadu queries.
+    state = get_state_for_coords(lat, lon)
+    if state is not None and "tamil nadu" not in state.lower():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                f"Coordinates ({lat}, {lon}) appear to be in {state}, not Tamil Nadu. "
+                "This tool only supports Tamil Nadu properties."
             ),
         )
 

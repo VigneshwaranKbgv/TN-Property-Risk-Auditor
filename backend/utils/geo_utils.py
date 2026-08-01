@@ -4,10 +4,14 @@ CRS conversion helpers, bounding box utilities, and coordinate validation
 for the TN Property Risk Auditor.
 """
 
-from typing import Tuple
+import logging
+from typing import Optional, Tuple
 
 import geopandas as gpd
+import requests
 from shapely.geometry import Point, box
+
+logger = logging.getLogger(__name__)
 
 
 # ── Tamil Nadu bounding box ───────────────────────────────────────────────────
@@ -37,6 +41,34 @@ def is_within_tamil_nadu(lat: float, lon: float) -> bool:
         TN_BOUNDS["lat_min"] <= lat <= TN_BOUNDS["lat_max"]
         and TN_BOUNDS["lon_min"] <= lon <= TN_BOUNDS["lon_max"]
     )
+
+
+def get_state_for_coords(lat: float, lon: float) -> Optional[str]:
+    """
+    Reverse-geocodes coordinates via OSM Nominatim to identify the containing
+    Indian state.
+
+    The TN bounding box is rectangular, but Tamil Nadu's real border is not —
+    it necessarily includes slivers of Kerala, Karnataka, and Andhra Pradesh.
+    This catches coordinates that pass the bounding-box check but are actually
+    in a neighboring state.
+
+    Returns None (rather than raising) if the lookup fails or times out, so
+    callers can fail permissively and not block legitimate TN queries on a
+    flaky third-party API.
+    """
+    url = "https://nominatim.openstreetmap.org/reverse"
+    headers = {
+        "User-Agent": "TN-Property-Risk-Auditor/1.0 (contact: support@tn-risk-auditor.gov)"
+    }
+    params = {"lat": lat, "lon": lon, "format": "json", "zoom": 5, "addressdetails": 1}
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=5)
+        if resp.status_code == 200:
+            return resp.json().get("address", {}).get("state")
+    except Exception as e:
+        logger.warning(f"[StateCheck] Reverse geocode for ({lat}, {lon}) failed: {e}")
+    return None
 
 
 def latlon_to_point_wgs84(lat: float, lon: float) -> Point:

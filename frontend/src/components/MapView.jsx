@@ -88,7 +88,7 @@ function MapClickHandler({ onMapClick }) {
 }
 
 // ── Main MapView ──────────────────────────────────────────────────────────────
-export default function MapView({ onRiskData, reportOpen }) {
+export default function MapView({ onRiskData, reportOpen, onClearPin }) {
   const [pin, setPin] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -187,13 +187,16 @@ export default function MapView({ onRiskData, reportOpen }) {
         </div>
       )}
 
-      {/* Pin info + Check button */}
+      {/* Pin info + Check button.
+          On mobile the report panel covers the whole screen when open, so
+          this card would otherwise float uselessly on top of it — hide it
+          there and only show the side-by-side version on sm+ screens. */}
       {pin && !loading && (
         <div
           className={`
             absolute bottom-6 z-[4000]
             transition-all duration-300
-            ${reportOpen ? "left-4" : "left-1/2 -translate-x-1/2"}
+            ${reportOpen ? "hidden sm:block left-4" : "left-1/2 -translate-x-1/2"}
           `}
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
@@ -241,7 +244,12 @@ export default function MapView({ onRiskData, reportOpen }) {
                 Check this property
               </button>
               <button
-                onClick={() => { setPin(null); setPinRisk("DEFAULT"); setError(null); }}
+                onClick={() => {
+                  setPin(null);
+                  setPinRisk("DEFAULT");
+                  setError(null);
+                  onClearPin?.();
+                }}
                 className="px-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700 transition-all"
                 aria-label="Clear pin"
               >

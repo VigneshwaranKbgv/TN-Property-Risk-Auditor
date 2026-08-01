@@ -162,10 +162,9 @@ export default function RiskReport({ riskData, onClose }) {
   return (
     <div
       className="
-        fixed top-0 right-0 h-full w-full max-w-md z-[1000]
+        relative h-full w-full
         flex flex-col bg-slate-900/95 backdrop-blur-xl
         border-l border-slate-700/50 shadow-2xl
-        transform transition-transform duration-300 ease-out
         overflow-hidden
       "
       role="complementary"

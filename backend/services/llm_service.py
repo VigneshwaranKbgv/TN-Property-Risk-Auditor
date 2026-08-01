@@ -4,12 +4,15 @@ NVIDIA NIM LLM integration for risk report generation and follow-up Q&A.
 Uses the OpenAI-compatible SDK with NVIDIA's base URL.
 """
 
+import copy
 import json
 import logging
 import os
 from typing import Generator
 
 from openai import OpenAI, APIError, APITimeoutError, APIConnectionError
+
+from utils.geo_utils import format_distance
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +65,9 @@ that a first-time homebuyer with no legal background can understand.
 Rules:
 - Never use legal jargon without explaining it immediately after
 - Be specific about distances and zone types from the data
+- Any field ending in "_formatted" (e.g. distance_meters_formatted) is already
+  formatted for display — copy that string exactly (e.g. "42.14 km"). Do not
+  read the raw numeric field, recompute the distance, or convert units yourself.
 - Always end with a clear recommended next step
 - Write in simple English. Max 300 words.
 - Do not give investment advice. Only flag legal/environmental risks.
@@ -69,12 +75,40 @@ Rules:
 - Format your response as 2-3 short paragraphs. No bullet points."""
 
 
+def _format_risk_metrics_for_prompt(risk_metrics: dict) -> dict:
+    """
+    Returns a deep copy of risk_metrics with raw meter distances accompanied by
+    a pre-formatted "_formatted" string (e.g. "42.14 km").
+
+    The 8B model reliably garbles large multi-digit decimals (e.g. reading
+    42137.13 as "421") when asked to transcribe them into prose. Formatting
+    distances server-side and instructing the model to copy them verbatim
+    removes that failure mode instead of relying on the model to do math.
+    """
+    formatted = copy.deepcopy(risk_metrics)
+
+    water = formatted.get("water_body") or {}
+    if water.get("distance_meters") is not None:
+        water["distance_meters_formatted"] = format_distance(water["distance_meters"])
+
+    crz = formatted.get("crz") or {}
+    if crz.get("distance_to_boundary_meters") is not None:
+        crz["distance_to_boundary_meters_formatted"] = format_distance(
+            crz["distance_to_boundary_meters"]
+        )
+
+    return formatted
+
+
 def _build_followup_system_prompt(risk_metrics: dict) -> str:
+    formatted_metrics = _format_risk_metrics_for_prompt(risk_metrics)
     return f"""You are a friendly property advisor. The user has already received
 a risk report for their property. Answer their follow-up questions
 using the risk data provided. Be concise and plain-spoken.
 Never guess — if the data doesn't cover their question, say so.
-Risk data: {json.dumps(risk_metrics, indent=2)}"""
+Any field ending in "_formatted" is already formatted for display (e.g.
+"42.14 km") — copy it exactly rather than reading the raw numeric field.
+Risk data: {json.dumps(formatted_metrics, indent=2)}"""
 
 
 # ── generate_risk_report ──────────────────────────────────────────────────────
@@ -90,7 +124,8 @@ def generate_risk_report(risk_metrics: dict) -> str:
     """
     client = _get_client()
     model = _select_model(risk_metrics)
-    user_message = f"Here is the property risk data: {json.dumps(risk_metrics, indent=2)}"
+    formatted_metrics = _format_risk_metrics_for_prompt(risk_metrics)
+    user_message = f"Here is the property risk data: {json.dumps(formatted_metrics, indent=2)}"
 
     try:
         response = client.chat.completions.create(
